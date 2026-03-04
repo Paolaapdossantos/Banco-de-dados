@@ -1,0 +1,79 @@
+----Criar a tabela pessoa -----------
+----criar a Procedure para os valores----
+
+
+CREATE TABLE PESSOA (
+ ID INT PRIMARY KEY,
+ NOME VARCHAR(60) NOT NULL,
+ SALARIO NUMBER(10,2) NOT NULL,
+);
+
+
+CREATE OR REPLACE
+PROCEDURE PROC_INSERIR_PESSOA(P_ID IN HR.PESSOA.ID%TYPE,
+                                P_NOME IN HR.PESSOA.NOME%TYPE,
+                                P_SALARIO IN HR.PESSOA.SALARIO%TYPE,
+                                P_SAIDA OUT NUMBER) ----- TRES PARAMETROS, 3 DE ENTRADA 1 SAIDA-----------
+IS 
+    V_QTDE NUMBER;
+BEGIN 
+    IF P_ID>=1 AND P_ID<= 99999 THEN
+        IF LENGTH(P_NOME) >=1 AND LENGTH (P_NOME) <=60 THEN
+            IF P_SALARIO >0 AND P_SALARIO  <=99999999.99  THEN 
+                SELECT COUNT(*) INTO V_QTDE
+                FROM PESSOA
+                WHERE ID=P_ID;
+                IF V_QTDE =0 THEN 
+                     INSERT INTO PESSOA (ID,NOME, SALARIO)
+                        VALUES (P_ID, P_NOME,P_SALARIO);
+                    P_SAIDA :=0; --INSERIDO COM SUCESSO
+                ELSE 
+                    P_SAIDA:=-1; --JÁ EXISTE NA TABELA
+                END IF;
+
+            ELSE 
+                P_SAIDA :=-4; -- SALARIO FORA DA FAIXA DE VALOR ACEITAVEL
+            END IF;
+
+        ELSE 
+            P_SAIDA:=-3; ---NOME TEMQUE TER ENTRE 1 E 60 CARACTER DE TAMANHO--
+        END IF;
+    ELSE
+        P_SAIDA :=-2 ; --ID FORA DA FAIXA DE VALOR ACEITAVEL 
+        
+    END IF;
+
+   COMMIT;
+EXCEPTION  
+WHEN OTHERS THEN 
+    ROLLBACK;
+    P_SAIDA:=SQLCODE;
+    DBMS_OUTPUT.PUT_LINE('CODIGO DO ERRO  É: ' || SQLCODE);
+    DBMS_OUTPUT.PUT_LINE('DESCRICAO DO ERRO  É: ' || SQLERRM);
+    DBMS_OUTPUT.PUT_LINE('LINHA DO ERROÉ: ' || DBMS_UTILITY.FORMAT_ERROR_BACKTRACE);
+END;
+
+
+--- CRIANDO TESTE PARA INSERIR COM A PROCEDURE----------
+
+
+  DECLARE
+    V_SAIDA NUMBER;
+BEGIN
+
+    PROC_INSERIR_PESSOA(10, 'JOAO SILVA', 3500, V_SAIDA);
+    DBMS_OUTPUT.PUT_LINE('Inserido JOAO - Retorno: ' || V_SAIDA);
+
+    PROC_INSERIR_PESSOA(11, 'MARIA SOUZA', 4200.50, V_SAIDA);
+    DBMS_OUTPUT.PUT_LINE('Inserido MARIA - Retorno: ' || V_SAIDA);
+
+    PROC_INSERIR_PESSOA(12, 'CARLOS LIMA', 2800, V_SAIDA);
+    DBMS_OUTPUT.PUT_LINE('Inserido CARLOS - Retorno: ' || V_SAIDA);
+
+    PROC_INSERIR_PESSOA(13, 'ANA PEREIRA', 5100.75, V_SAIDA);
+    DBMS_OUTPUT.PUT_LINE('Inserido ANA - Retorno: ' || V_SAIDA);
+
+    PROC_INSERIR_PESSOA(14, 'FERNANDO COSTA', 6200, V_SAIDA);
+    DBMS_OUTPUT.PUT_LINE('Inserido FERNANDO - Retorno: ' || V_SAIDA);
+
+END;
