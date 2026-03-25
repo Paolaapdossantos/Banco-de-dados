@@ -1,0 +1,50 @@
+ ---------TRANSFORMAR PROCEDURE EM FUNCAO 
+
+   CREATE OR REPLACE
+FUNCTION  FUNC_AUMENTOSALARIOPESSOA(P_ID IN PESSOA.ID%TYPE,
+                                    P_PERC IN NUMBER)
+RETURN NUMBER 
+IS
+    V_QTDE NUMBER(1);
+    V_SALARIO PESSOA.SALARIO%TYPE;
+    V_NOVO_SALARIO PESSOA.SALARIO%TYPE;
+    V_RET NUMBER(5);--- VARIAVEL CONTROLA O VALOR DA SAIDA DO RETURN 
+BEGIN
+    IF P_PERC > 0 AND P_PERC <= 10 THEN
+        SELECT COUNT(*) INTO V_QTDE FROM PESSOA WHERE ID = P_ID AND SALARIO < 10000;
+        IF V_QTDE = 1 THEN
+            SELECT SALARIO INTO V_SALARIO FROM PESSOA WHERE ID = P_ID;
+            V_NOVO_SALARIO := V_SALARIO + (V_SALARIO * (P_PERC/100));
+            IF V_NOVO_SALARIO > 10000 THEN
+                V_NOVO_SALARIO := 10000;
+            END IF;
+            UPDATE PESSOA SET SALARIO = V_NOVO_SALARIO WHERE ID = P_ID;
+            V_RET := 0;
+        ELSE
+            V_RET:= -999; /* FUNCIONÁRIO NÃO EXISTE */
+        END IF;
+    ELSE
+        V_RET:= -998; /* PERCENTUAL FORA DA FAIXA DE VALOR */
+    END IF;
+    COMMIT;
+    RETURN V_RET;--- SER UM FUNCION OBRIGATORIO PASSAR POR UM RETORNO 
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        V_RET := SQLCODE;
+        RETURN V_RET;
+END;
+
+---BLOCO PLSQL PARA EXECUTAR UMA FUNCTION
+
+ DECLARE 
+        RET NUMBER ;
+   BEGIN
+        RETC := FUNC_AUMENTOSALARIOPESSOA(1,10);
+        DBMS_OUTPUT.PUT_LINE('RETORNOU  ' || RET);
+   END;
+
+---- primeiro criar estrutura da tabela 
+----inserir um registro para teste --------
+----porcentual para fora da faixa de valor-----
+----bloco pl/sql para executar uma procedure----

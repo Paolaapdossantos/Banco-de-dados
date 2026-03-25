@@ -12,12 +12,15 @@ PROCEDURE PROC_AUMENTAR_SALARIO(P_ID IN HR.PESSOA.ID%TYPE,
                                 P_PORCENT IN NUMBER,
                                 P_SAIDA OUT NUMBER) ----- TRES PARAMETROS, 3 DE ENTRADA 1 SAIDA-----------
 IS 
-    V_QTDE NUMBER;
-    V_SALARIO_ATUAL NUMBER;
-    V_SALARIO_NOVO NUMBER;
+    V_QTDE NUMBER (1);
+    V_SALARIO PESSOA.SALARIO%TYPE;
+    V_NOVO_SALARIO PESSOA.SALARIO%TYPE;
+    
 BEGIN 
-                 IF P_PORCENT >0 AND P_PORCENT  <10  THEN    
-                        SELECT COUNT(*) INTO V_QTDE
+                 IF P_PORCENT >0 AND P_PORCENT  <=10  THEN    
+                        SELECT COUNT(*) INTO V_QTDE FROM PESSOA WHERE ID = P_ID AND SALARIO<10000;
+                        IF V_QTDE = 0 THEN 
+                        SELECT SALARIO INTO 
                         FROM PESSOA
                         WHERE ID=P_ID AND SALARIO <10000;
                         (V_SALARIO_ATUAL= SALARIO /)
