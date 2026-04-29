@@ -17,22 +17,21 @@ IS
     V_NOVO_SALARIO PESSOA.SALARIO%TYPE;
 BEGIN
     IF P_PERC > 0 AND P_PERC <= 10 THEN
-        SELECT COUNT(*) INTO V_QTDE FROM PESSOA WHERE ID = P_ID ;
-        IF V_QTDE = 1 THEN
-            SELECT SALARIO INTO V_SALARIO FROM PESSOA WHERE ID = P_ID;
-            IF V_SALARIO<10000 THEN 
+            SELECT COUNT(*) INTO V_QTDE FROM PESSOA WHERE ID = P_ID ;
+            IF V_QTDE = 1 THEN
+                    SELECT SALARIO INTO V_SALARIO FROM PESSOA WHERE ID = P_ID;
+                    IF V_SALARIO <=10000 THEN 
+                        V_NOVO_SALARIO = V_SALARIO + (V_SALARIO * (P_PERC/100));
+                            IF V_NOVO_SALARIO > 10000 THEN
+                                V_NOVO_SALARIO := 10000;
+                            END IF;
+                        UPDATE PESSOA SET SALARIO = V_NOVO_SALARIO WHERE ID = P_ID;
+                    P_SAIDA := 0;
+                    ELSE 
+                        P_SAIDA :=-997;--SALARIO FORA DA FAIXA
             ELSE
-                SAIDA:=-997; --FUNCIONARIO GANHA MAIS QUE 10 MIL
-            END IF
-            V_NOVO_SALARIO := V_SALARIO + (V_SALARIO * (P_PERC/100));
-            IF V_NOVO_SALARIO > 10000 THEN
-                V_NOVO_SALARIO := 10000;
+                P_SAIDA := -999; /* FUNCIONÁRIO NÃO EXISTE */
             END IF;
-            UPDATE PESSOA SET SALARIO = V_NOVO_SALARIO WHERE ID = P_ID;
-            P_SAIDA := 0;
-        ELSE
-            P_SAIDA := -999; /* FUNCIONÁRIO NÃO EXISTE */
-        END IF;
     ELSE
         P_SAIDA := -998; /* PERCENTUAL FORA DA FAIXA DE VALOR */
     END IF;
